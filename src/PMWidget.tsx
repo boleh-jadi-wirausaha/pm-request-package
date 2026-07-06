@@ -21,16 +21,28 @@ export interface PMWidgetProps extends SaasClientConfig {
   brandName?: string;
 }
 
-const STYLE_TAG_ID = "pm-widget-styles";
+function useShadowRoot() {
+  const [container, setContainer] = useState<HTMLElement | null>(null);
 
-function useInjectStyles() {
   useEffect(() => {
-    if (document.getElementById(STYLE_TAG_ID)) return;
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const shadowRoot = host.attachShadow({ mode: "open" });
+
     const style = document.createElement("style");
-    style.id = STYLE_TAG_ID;
     style.textContent = compiledStyles;
-    document.head.appendChild(style);
+    shadowRoot.appendChild(style);
+
+    const mountPoint = document.createElement("div");
+    shadowRoot.appendChild(mountPoint);
+    setContainer(mountPoint);
+
+    return () => {
+      document.body.removeChild(host);
+    };
   }, []);
+
+  return container;
 }
 
 function cornerClasses(corner: PMWidgetCorner): string {
@@ -127,7 +139,7 @@ export function PMWidget({
   ...config
 }: PMWidgetProps) {
   const [open, setOpen] = useState(false);
-  useInjectStyles();
+  const container = useShadowRoot();
 
   useEffect(() => {
     if (!open) return;
@@ -138,7 +150,7 @@ export function PMWidget({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
-  if (typeof document === "undefined") return null;
+  if (typeof document === "undefined" || !container) return null;
 
   const content = (
     <div
@@ -174,5 +186,5 @@ export function PMWidget({
     </div>
   );
 
-  return createPortal(content, document.body);
+  return createPortal(content, container);
 }

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { formatRelativeTime, getInitials } from "../lib/format";
 import type { TicketCustomerChat } from "../types";
 
 export interface ChatPanelProps {
@@ -13,29 +14,43 @@ export function ChatPanel({ messages, loading, error, sending, onSend }: ChatPan
   const [draft, setDraft] = useState("");
 
   return (
-    <div className="pmw:flex pmw:flex-col pmw:gap-2">
-      <div className="pmw:flex pmw:max-h-48 pmw:flex-col pmw:gap-2 pmw:overflow-y-auto pmw:rounded pmw:border pmw:border-gray-200 pmw:p-2">
-        {loading && <p className="pmw:text-xs pmw:text-gray-500">Loading chat...</p>}
+    <div className="pmw:flex pmw:flex-col">
+      <div className="pmw:sw-scroll pmw:flex pmw:h-[296px] pmw:flex-col pmw:gap-3.5 pmw:overflow-y-auto pmw:bg-[#fbfbfc] pmw:p-[18px]">
+        {loading && <p className="pmw:text-xs pmw:text-[#9aa0ad]">Loading chat...</p>}
         {error && <p className="pmw:text-xs pmw:text-red-600">{error}</p>}
-        {!loading && messages.length === 0 && (
-          <p className="pmw:text-xs pmw:text-gray-500">No messages yet.</p>
+        {!loading && messages.length === 0 && <p className="pmw:text-xs pmw:text-[#9aa0ad]">No messages yet.</p>}
+
+        {messages.map((m) =>
+          m.isCustomer ? (
+            <div key={m.id} className="pmw:flex pmw:justify-end">
+              <div className="pmw:max-w-[86%]">
+                <div className="pmw:rounded-[14px_14px_4px_14px] pmw:bg-[var(--accent)] pmw:px-[13px] pmw:py-2.5 pmw:text-[13.5px] pmw:leading-[1.45] pmw:text-white">
+                  {m.message}
+                </div>
+                <div className="pmw:mr-1 pmw:mt-[5px] pmw:text-right pmw:text-[11px] pmw:font-medium pmw:text-[#a4a9b4]">
+                  {formatRelativeTime(m.createdDate)}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div key={m.id} className="pmw:flex pmw:max-w-[88%] pmw:items-end pmw:gap-[9px]">
+              <div className="pmw:flex pmw:h-7 pmw:w-7 pmw:flex-none pmw:items-center pmw:justify-center pmw:rounded-full pmw:bg-[var(--accent)] pmw:text-[11px] pmw:font-bold pmw:text-white">
+                {getInitials(m.authorName)}
+              </div>
+              <div>
+                <div className="pmw:rounded-[14px_14px_14px_4px] pmw:border pmw:border-[#ecedf1] pmw:bg-white pmw:px-[13px] pmw:py-2.5 pmw:text-[13.5px] pmw:leading-[1.45] pmw:text-[#2b2f38]">
+                  {m.message}
+                </div>
+                <div className="pmw:ml-1 pmw:mt-[5px] pmw:text-[11px] pmw:font-medium pmw:text-[#a4a9b4]">
+                  {m.authorName} · {formatRelativeTime(m.createdDate)}
+                </div>
+              </div>
+            </div>
+          )
         )}
-        {messages.map((m) => (
-          <div
-            key={m.id}
-            className={`pmw:max-w-[85%] pmw:rounded pmw:px-2 pmw:py-1 pmw:text-xs ${
-              m.isCustomer
-                ? "pmw:self-end pmw:bg-blue-600 pmw:text-white"
-                : "pmw:self-start pmw:bg-gray-100 pmw:text-gray-800"
-            }`}
-          >
-            <p className="pmw:font-medium">{m.authorName}</p>
-            <p>{m.message}</p>
-          </div>
-        ))}
       </div>
       <form
-        className="pmw:flex pmw:gap-2"
+        className="pmw:flex pmw:items-center pmw:gap-[9px] pmw:border-t pmw:border-[#f1f2f6] pmw:bg-white pmw:px-3.5 pmw:py-3"
         onSubmit={(e) => {
           e.preventDefault();
           if (!draft.trim()) return;
@@ -47,15 +62,19 @@ export function ChatPanel({ messages, loading, error, sending, onSend }: ChatPan
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Message the handler..."
-          className="pmw:flex-1 pmw:rounded pmw:border pmw:border-gray-300 pmw:px-2 pmw:py-1.5 pmw:text-sm pmw:outline-none pmw:focus:border-blue-500"
+          placeholder="Write a reply…"
+          className="pmw:accent-ring-sm pmw:h-[42px] pmw:flex-1 pmw:rounded-xl pmw:border-[1.5px] pmw:border-[#e6e8ee] pmw:bg-[#f7f8fa] pmw:px-3.5 pmw:text-[13.5px] pmw:text-[#171a22] pmw:outline-none"
         />
         <button
           type="submit"
           disabled={sending}
-          className="pmw:rounded pmw:bg-blue-600 pmw:px-3 pmw:py-1.5 pmw:text-sm pmw:font-medium pmw:text-white pmw:disabled:opacity-50"
+          aria-label="Send message"
+          className="pmw:accent-action pmw:flex pmw:h-[42px] pmw:w-[42px] pmw:flex-none pmw:items-center pmw:justify-center pmw:rounded-xl pmw:border-none pmw:text-white pmw:disabled:opacity-50"
         >
-          Send
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 2L11 13" />
+            <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+          </svg>
         </button>
       </form>
     </div>

@@ -11,6 +11,8 @@ export function App() {
         baseUrl={local}
         organizationId="00000000-0000-0000-0000-000000000001"
         corner="bottom-right"
+        accentColor="blue"
+        brandName="ITEL Learning System"
       />
     </div>
   );

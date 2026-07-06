@@ -4,6 +4,7 @@ import { CreateTicketForm } from "./components/CreateTicketForm";
 import { LoginForm } from "./components/LoginForm";
 import { TicketDetail } from "./components/TicketDetail";
 import { TicketList } from "./components/TicketList";
+import { WidgetHeader } from "./components/WidgetHeader";
 import { useAuth } from "./hooks/useAuth";
 import { useCreateTicket } from "./hooks/useCreateTicket";
 import { useTickets } from "./hooks/useTickets";
@@ -16,6 +17,8 @@ export type PMWidgetCorner = "top-left" | "top-right" | "bottom-left" | "bottom-
 
 export interface PMWidgetProps extends SaasClientConfig {
   corner?: PMWidgetCorner;
+  accentColor?: string;
+  brandName?: string;
 }
 
 const STYLE_TAG_ID = "pm-widget-styles";
@@ -40,7 +43,11 @@ function cornerClasses(corner: PMWidgetCorner): string {
 
 type View = { name: "list" } | { name: "create" } | { name: "detail"; ticket: Ticket };
 
-function PMWidgetPanel(config: SaasClientConfig) {
+function PMWidgetPanel({
+  brandName,
+  onClose,
+  ...config
+}: SaasClientConfig & { brandName: string; onClose: () => void }) {
   const auth = useAuth(config);
   const workspace = useWorkspace(config, auth.token, auth.logout);
   const tickets = useTickets(config, auth.token, auth.logout);
@@ -48,75 +55,77 @@ function PMWidgetPanel(config: SaasClientConfig) {
   const [view, setView] = useState<View>({ name: "list" });
 
   if (!auth.token) {
-    return <LoginForm onSubmit={auth.login} loading={auth.loading} error={auth.error} />;
+    return (
+      <>
+        <WidgetHeader brandName={brandName} onClose={onClose} />
+        <LoginForm onSubmit={auth.login} loading={auth.loading} error={auth.error} />
+      </>
+    );
   }
 
   if (view.name === "detail") {
     return (
-      <TicketDetail
-        config={config}
-        ticket={view.ticket}
-        token={auth.token}
-        onUnauthorized={auth.logout}
-        onBack={() => setView({ name: "list" })}
-      />
+      <>
+        <WidgetHeader brandName={brandName} onClose={onClose} onBack={() => setView({ name: "list" })} />
+        <TicketDetail config={config} ticket={view.ticket} token={auth.token} onUnauthorized={auth.logout} />
+      </>
     );
   }
 
   if (view.name === "create") {
     return (
-      <div className="pmw:flex pmw:flex-col pmw:gap-2">
-        <button
-          type="button"
-          onClick={() => setView({ name: "list" })}
-          className="pmw:self-start pmw:text-xs pmw:text-blue-600 pmw:hover:underline"
-        >
-          ← Back to tickets
-        </button>
-        <CreateTicketForm
-          workspaces={workspace.workspaces}
-          loading={createTicket.loading}
-          error={createTicket.error}
-          onSubmit={async (description, workspaceId, problemDefinitionId, photos) => {
-            const ticket = await createTicket.createTicket({
-              workspaceId,
-              description,
-              problemDefinitionId,
-              photos,
-            });
-            if (!ticket) return false;
-            tickets.refetch();
-            setView({ name: "list" });
-            return true;
-          }}
-        />
-      </div>
+      <>
+        <WidgetHeader brandName={brandName} onClose={onClose} />
+        <div className="pmw:flex pmw:flex-col pmw:gap-2 pmw:p-4">
+          <button
+            type="button"
+            onClick={() => setView({ name: "list" })}
+            className="pmw:self-start pmw:text-xs pmw:text-[var(--accent)] pmw:hover:underline"
+          >
+            ← Back to tickets
+          </button>
+          <CreateTicketForm
+            workspaces={workspace.workspaces}
+            loading={createTicket.loading}
+            error={createTicket.error}
+            onSubmit={async (description, workspaceId, problemDefinitionId, photos) => {
+              const ticket = await createTicket.createTicket({
+                workspaceId,
+                description,
+                problemDefinitionId,
+                photos,
+              });
+              if (!ticket) return false;
+              tickets.refetch();
+              setView({ name: "list" });
+              return true;
+            }}
+          />
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="pmw:flex pmw:flex-col pmw:gap-3">
-      <div className="pmw:flex pmw:items-center pmw:justify-between">
-        <h2 className="pmw:text-sm pmw:font-semibold pmw:text-gray-800">My tickets</h2>
-        <button
-          type="button"
-          onClick={() => setView({ name: "create" })}
-          className="pmw:rounded pmw:bg-blue-600 pmw:px-2 pmw:py-1 pmw:text-xs pmw:font-medium pmw:text-white"
-        >
-          New request
-        </button>
-      </div>
+    <>
+      <WidgetHeader brandName={brandName} onClose={onClose} />
       <TicketList
         tickets={tickets.tickets}
         loading={tickets.loading}
         error={tickets.error}
         onSelect={(ticket) => setView({ name: "detail", ticket })}
+        onCreateNew={() => setView({ name: "create" })}
       />
-    </div>
+    </>
   );
 }
 
-export function PMWidget({ corner = "bottom-right", ...config }: PMWidgetProps) {
+export function PMWidget({
+  corner = "bottom-right",
+  accentColor = "#4b5bf0",
+  brandName = "Support",
+  ...config
+}: PMWidgetProps) {
   const [open, setOpen] = useState(false);
   useInjectStyles();
 
@@ -132,14 +141,17 @@ export function PMWidget({ corner = "bottom-right", ...config }: PMWidgetProps) 
   if (typeof document === "undefined") return null;
 
   const content = (
-    <div className={cornerClasses(corner)} style={{ zIndex: 2147483000 }}>
+    <div
+      className={cornerClasses(corner)}
+      style={{ zIndex: 2147483000, ["--accent" as string]: accentColor }}
+    >
       {open && (
         <div
           role="dialog"
           aria-label="PM Widget"
-          className="pmw:w-80 pmw:max-w-[calc(100vw-3rem)] pmw:rounded-lg pmw:border pmw:border-gray-200 pmw:bg-white pmw:p-4 pmw:shadow-xl"
+          className="pmw:sw-pop pmw:w-[372px] pmw:max-w-[calc(100vw-3rem)] pmw:overflow-hidden pmw:rounded-[20px] pmw:border pmw:border-[#e7e9ef] pmw:bg-white pmw:shadow-[0_18px_48px_rgba(23,26,45,.18),0_4px_12px_rgba(23,26,45,.06)]"
         >
-          <PMWidgetPanel {...config} />
+          <PMWidgetPanel brandName={brandName} onClose={() => setOpen(false)} {...config} />
         </div>
       )}
       <button
@@ -147,9 +159,17 @@ export function PMWidget({ corner = "bottom-right", ...config }: PMWidgetProps) 
         aria-label={open ? "Close PM widget" : "Open PM widget"}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="pmw:flex pmw:h-12 pmw:w-12 pmw:items-center pmw:justify-center pmw:rounded-full pmw:bg-blue-600 pmw:text-xl pmw:text-white pmw:shadow-lg"
+        className="pmw:p-3 pmw:launcher-btn pmw:flex pmw:items-center pmw:justify-center pmw:rounded-full pmw:border-none pmw:text-white"
       >
-        {open ? "×" : "◆"}
+        {open ? (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+          </svg>
+        )}
       </button>
     </div>
   );

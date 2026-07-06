@@ -1,3 +1,85 @@
 @import "tailwindcss" prefix(pmw);
 
 @source "./**/*.{ts,tsx}";
+
+/*
+ * Accent-color-relative helpers using color-mix(), which can't be expressed
+ * as static Tailwind arbitrary-value utilities. `--accent` is set once, on
+ * the widget's root wrapper, from the `accentColor` prop.
+ */
+.pmw\:pill-accent {
+  background: color-mix(in srgb, var(--accent) 12%, #fff);
+  color: var(--accent);
+}
+
+.pmw\:accent-ring:focus {
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.pmw\:accent-ring-sm:focus {
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 13%, transparent);
+}
+
+.pmw\:accent-card-hover:hover {
+  border-color: color-mix(in srgb, var(--accent) 30%, #edeff3);
+  background: color-mix(in srgb, var(--accent) 3%, #fff);
+}
+
+.pmw\:accent-submit {
+  background: var(--accent);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+.pmw\:accent-submit:hover {
+  background: color-mix(in srgb, var(--accent) 88%, #000);
+}
+
+.pmw\:accent-action {
+  background: var(--accent);
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+.pmw\:accent-action:hover {
+  background: color-mix(in srgb, var(--accent) 88%, #000);
+}
+
+.pmw\:brand-icon-shadow {
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.pmw\:launcher-btn {
+  background: var(--accent);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 42%, transparent);
+}
+.pmw\:launcher-btn:hover {
+  background: color-mix(in srgb, var(--accent) 90%, #000);
+}
+
+.pmw\:accent-back-btn:hover {
+  background: color-mix(in srgb, var(--accent) 8%, #fff);
+}
+
+.pmw\:sw-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.pmw\:sw-scroll::-webkit-scrollbar-thumb {
+  background: #d7dae1;
+  border-radius: 8px;
+  border: 2px solid #fff;
+}
+
+@keyframes pmw-pop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pmw\:sw-pop {
+  animation: pmw-pop 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}

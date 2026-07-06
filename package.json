@@ -1,0 +1,32 @@
+{
+  "name": "pm-request-widget",
+  "version": "0.0.1",
+  "description": "React component to embed SaaS backend connectivity in customer websites",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build:css": "tailwindcss -i src/tailwind-input.css -o src/styles.generated.css --minify",
+    "build": "npm run build:css && tsup",
+    "dev": "npm run build:css && tsup --watch",
+    "prepare": "npm run build",
+    "demo": "npm run build && npm --prefix demo install && npm --prefix demo run dev"
+  },
+  "peerDependencies": {
+    "react": ">=17",
+    "react-dom": ">=17"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.2",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "tailwindcss": "^4.3.2",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0"
+  }
+}

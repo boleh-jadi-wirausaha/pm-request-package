@@ -3,6 +3,19 @@
 @source "./**/*.{ts,tsx}";
 
 /*
+ * Tailwind's `border` utilities read `var(--tw-border-style)`, normally set
+ * to `solid` via `@property` initial-value. `@property` registration is
+ * unreliable inside a shadow root (this stylesheet is injected there, see
+ * PMWidget.tsx useShadowRoot), so `var()` fails to resolve and border-style
+ * silently falls back to `none`. Set it as a plain custom property instead.
+ */
+*,
+::before,
+::after {
+  --tw-border-style: solid;
+}
+
+/*
  * Accent-color-relative helpers using color-mix(), which can't be expressed
  * as static Tailwind arbitrary-value utilities. `--accent` is set once, on
  * the widget's root wrapper, from the `accentColor` prop.

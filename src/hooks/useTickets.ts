@@ -17,7 +17,7 @@ export function useTickets(
   token: string | null,
   onUnauthorized: () => void
 ): UseTicketsResult {
-  const { baseUrl } = config;
+  const { baseUrl, organizationId } = config;
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export function useTickets(
 
     const client = new ApiClient({ baseUrl, token, onUnauthorized });
     client
-      .get<PagedResult<Ticket>>(`/request-workspace/tickets/mine`, controller.signal)
+      .get<PagedResult<Ticket>>(`/request-workspace/tickets/mine?organizationId=${organizationId}`, controller.signal)
       .then((result) => {
         if (controller.signal.aborted) return;
         setLoading(false);

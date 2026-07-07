@@ -8,7 +8,7 @@ export function App() {
     <div style={{ padding: 24 }}>
       <h1>pm-request-widget demo</h1>
       <PMWidget
-        baseUrl={local}
+        baseUrl={prod}
         organizationId="00000000-0000-0000-0000-000000000001"
         corner="bottom-right"
         accentColor="blue"

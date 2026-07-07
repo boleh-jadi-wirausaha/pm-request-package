@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { formatRelativeTime, getInitials } from "../lib/format";
 import type { TicketCustomerChat } from "../types";
 
@@ -10,40 +10,93 @@ export interface ChatPanelProps {
   onSend: (message: string) => Promise<boolean>;
 }
 
+interface GroupedMessage {
+  message: TicketCustomerChat;
+  isFirstInGroup: boolean;
+  isLastInGroup: boolean;
+}
+
+function groupMessages(messages: TicketCustomerChat[]): GroupedMessage[] {
+  return messages.map((m, i) => {
+    const prev = messages[i - 1];
+    const next = messages[i + 1];
+    const sameAsPrev = prev && prev.isCustomer === m.isCustomer && prev.authorName === m.authorName;
+    const sameAsNext = next && next.isCustomer === m.isCustomer && next.authorName === m.authorName;
+    return {
+      message: m,
+      isFirstInGroup: !sameAsPrev,
+      isLastInGroup: !sameAsNext,
+    };
+  });
+}
+
 export function ChatPanel({ messages, loading, error, sending, onSend }: ChatPanelProps) {
   const [draft, setDraft] = useState("");
+  const grouped = groupMessages(messages);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const didInitialScroll = useRef(false);
+
+  useEffect(() => {
+    if (didInitialScroll.current || loading || messages.length === 0) return;
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+    didInitialScroll.current = true;
+  }, [loading, messages]);
 
   return (
     <div className="pmw:flex pmw:flex-col">
-      <div className="pmw:sw-scroll pmw:flex pmw:h-[296px] pmw:flex-col pmw:gap-3.5 pmw:overflow-y-auto pmw:bg-[#fbfbfc] pmw:p-[18px]">
+      <div
+        ref={scrollRef}
+        className="pmw:sw-scroll pmw:flex pmw:h-[296px] pmw:flex-col pmw:gap-1 pmw:overflow-y-auto pmw:bg-[#fbfbfc] pmw:p-[18px]"
+      >
         {loading && <p className="pmw:text-xs pmw:text-[#9aa0ad]">Loading chat...</p>}
         {error && <p className="pmw:text-xs pmw:text-red-600">{error}</p>}
         {!loading && messages.length === 0 && <p className="pmw:text-xs pmw:text-[#9aa0ad]">No messages yet.</p>}
 
-        {messages.map((m) =>
+        {grouped.map(({ message: m, isFirstInGroup, isLastInGroup }) =>
           m.isCustomer ? (
-            <div key={m.id} className="pmw:flex pmw:justify-end">
+            <div key={m.id} className={`pmw:flex pmw:justify-end${isFirstInGroup ? "" : " pmw:mt-[-8px]"}`}>
               <div className="pmw:max-w-[86%]">
-                <div className="pmw:rounded-[14px_14px_4px_14px] pmw:bg-[var(--accent)] pmw:px-[13px] pmw:py-2.5 pmw:text-[13.5px] pmw:leading-[1.45] pmw:text-white">
+                {isFirstInGroup && (
+                  <div className="pmw:mb-1 pmw:text-right pmw:text-[11px] pmw:font-medium pmw:text-[#a4a9b4]">
+                    {m.authorName}
+                  </div>
+                )}
+                <div
+                  className={`pmw:bg-[var(--accent)] pmw:px-[13px] pmw:py-2.5 pmw:text-[13.5px] pmw:leading-[1.45] pmw:text-white`}
+                >
                   {m.message}
                 </div>
-                <div className="pmw:mr-1 pmw:mt-[5px] pmw:text-right pmw:text-[11px] pmw:font-medium pmw:text-[#a4a9b4]">
-                  {formatRelativeTime(m.createdDate)}
-                </div>
+                {isLastInGroup && (
+                  <div className="pmw:mr-1 pmw:mt-[5px] pmw:text-right pmw:text-[11px] pmw:font-medium pmw:text-[#a4a9b4]">
+                    {m.authorName} · {formatRelativeTime(m.createdDate)}
+                  </div>
+                )}
               </div>
             </div>
           ) : (
-            <div key={m.id} className="pmw:flex pmw:max-w-[88%] pmw:items-end pmw:gap-[9px]">
-              <div className="pmw:flex pmw:h-7 pmw:w-7 pmw:flex-none pmw:items-center pmw:justify-center pmw:rounded-full pmw:bg-[var(--accent)] pmw:text-[11px] pmw:font-bold pmw:text-white">
-                {getInitials(m.authorName)}
-              </div>
+            <div key={m.id} className={`pmw:flex pmw:max-w-[88%] pmw:items-end pmw:gap-[9px]${isFirstInGroup ? "" : " pmw:pl-10"}`}>
+              {isFirstInGroup && (
+                <div className="pmw:flex pmw:h-7 pmw:w-7 pmw:flex-none pmw:items-center pmw:justify-center pmw:rounded-full pmw:bg-[var(--accent)] pmw:text-[11px] pmw:font-bold pmw:text-white">
+                  {getInitials(m.authorName)}
+                </div>
+              )}
               <div>
-                <div className="pmw:rounded-[14px_14px_14px_4px] pmw:border pmw:border-[#ecedf1] pmw:bg-white pmw:px-[13px] pmw:py-2.5 pmw:text-[13.5px] pmw:leading-[1.45] pmw:text-[#2b2f38]">
+                {isFirstInGroup && (
+                  <div className="pmw:mb-1 pmw:text-[11px] pmw:font-medium pmw:text-[#a4a9b4]">
+                    {m.authorName}
+                  </div>
+                )}
+                <div
+                  className={`pmw:border pmw:border-[#ecedf1] pmw:bg-white pmw:px-[13px] pmw:py-2.5 pmw:text-[13.5px] pmw:leading-[1.45] pmw:text-[#2b2f38]`}
+                >
                   {m.message}
                 </div>
-                <div className="pmw:ml-1 pmw:mt-[5px] pmw:text-[11px] pmw:font-medium pmw:text-[#a4a9b4]">
-                  {m.authorName} · {formatRelativeTime(m.createdDate)}
-                </div>
+                {isLastInGroup && (
+                  <div className="pmw:ml-1 pmw:mt-[5px] pmw:text-[11px] pmw:font-medium pmw:text-[#a4a9b4]">
+                    {m.authorName} · {formatRelativeTime(m.createdDate)}
+                  </div>
+                )}
               </div>
             </div>
           )

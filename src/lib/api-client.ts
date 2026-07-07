@@ -1,6 +1,6 @@
 import type { ApiResult } from "../types";
 
-const DEFAULT_BASE_URL = "https://pm.bojawi.com/api";
+export const DEFAULT_BASE_URL = "https://pm.bojawi.com/api";
 
 export interface ApiClientOptions {
   baseUrl?: string;

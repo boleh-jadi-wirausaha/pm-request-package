@@ -161,7 +161,7 @@ export function PMWidget({
         <div
           role="dialog"
           aria-label="PM Widget"
-          className="pmw:sw-pop pmw:w-[372px] pmw:max-w-[calc(100vw-3rem)] pmw:overflow-hidden pmw:rounded-[20px] pmw:border-2 pmw:border-[#e7e9ef] pmw:bg-white pmw:shadow-[0_18px_48px_rgba(23,26,45,.18),0_4px_12px_rgba(23,26,45,.06)]"
+          className="pmw:sw-pop pmw:w-2xl pmw:max-w-[calc(100vw-3rem)] pmw:overflow-hidden pmw:rounded-[20px] pmw:border-2 pmw:border-[#e7e9ef] pmw:bg-white pmw:shadow-[0_18px_48px_rgba(23,26,45,.18),0_4px_12px_rgba(23,26,45,.06)]"
         >
           <PMWidgetPanel brandName={brandName} onClose={() => setOpen(false)} {...config} />
         </div>

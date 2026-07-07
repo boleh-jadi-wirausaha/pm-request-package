@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { Workspace } from "../types";
+import type { ProblemDefinition, Workspace } from "../types";
 
 export interface CreateTicketFormProps {
   workspaces: Workspace[];
@@ -13,18 +13,45 @@ export interface CreateTicketFormProps {
   ) => Promise<boolean>;
 }
 
+interface FlatProblemDefinition extends ProblemDefinition {
+  workspaceId: string;
+}
+
+function flattenProblemDefinitions(workspaces: Workspace[]): FlatProblemDefinition[] {
+  return workspaces.flatMap((w) =>
+    (w.problemDefinitions ?? []).map((pd) => ({ ...pd, workspaceId: w.id }))
+  );
+}
+
 export function CreateTicketForm({ workspaces, loading, error, onSubmit }: CreateTicketFormProps) {
+  const problemDefinitions = flattenProblemDefinitions(workspaces);
   const [description, setDescription] = useState("");
-  const [workspaceId, setWorkspaceId] = useState(workspaces[0]?.id ?? "");
-  const selectedWorkspace = workspaces.find((w) => w.id === workspaceId);
-  const problemDefinitions = selectedWorkspace?.problemDefinitions ?? [];
   const [problemDefinitionId, setProblemDefinitionId] = useState(problemDefinitions[0]?.id ?? "");
   const [photos, setPhotos] = useState<File[]>([]);
   const [validationError, setValidationError] = useState<string | null>(null);
 
+  const selectedProblemDefinition = problemDefinitions.find((pd) => pd.id === problemDefinitionId);
+  const selectedWorkspace = workspaces.find((w) => w.id === selectedProblemDefinition?.workspaceId);
+
+  if (workspaces.length === 0) {
+    return (
+      <p className="pmw:text-sm pmw:font-medium pmw:text-[#6a7180]">
+        No request workspace available in your organization.
+      </p>
+    );
+  }
+
+  if (problemDefinitions.length === 0) {
+    return (
+      <p className="pmw:text-sm pmw:font-medium pmw:text-[#6a7180]">
+        No request categories available in your organization.
+      </p>
+    );
+  }
+
   return (
     <form
-      className="pmw:flex pmw:flex-col pmw:gap-3"
+      className="pmw:flex pmw:flex-col pmw:gap-3.5"
       onSubmit={(e) => {
         e.preventDefault();
         const titleRegex = selectedWorkspace?.ticketTitleRegex;
@@ -33,36 +60,22 @@ export function CreateTicketForm({ workspaces, loading, error, onSubmit }: Creat
           return;
         }
         setValidationError(null);
-        void onSubmit(description, workspaceId, problemDefinitionId, photos);
+        void onSubmit(description, selectedProblemDefinition!.workspaceId, problemDefinitionId, photos);
       }}
     >
-      <h2 className="pmw:text-sm pmw:font-semibold pmw:text-gray-800">New request</h2>
-      <label className="pmw:flex pmw:flex-col pmw:gap-1 pmw:text-xs pmw:text-gray-600">
-        Workspace
-        <select
-          value={workspaceId}
-          onChange={(e) => {
-            setWorkspaceId(e.target.value);
-            const nextWorkspace = workspaces.find((w) => w.id === e.target.value);
-            setProblemDefinitionId(nextWorkspace?.problemDefinitions?.[0]?.id ?? "");
-          }}
-          required
-          className="pmw:rounded pmw:border pmw:border-gray-300 pmw:px-2 pmw:py-1.5 pmw:text-sm"
-        >
-          {workspaces.map((w) => (
-            <option key={w.id} value={w.id}>
-              {w.workspaceName}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="pmw:flex pmw:flex-col pmw:gap-1 pmw:text-xs pmw:text-gray-600">
-        Category
+      <div>
+        <h2 className="pmw:text-xl pmw:font-extrabold pmw:tracking-tight pmw:text-[#171a22]">New request</h2>
+        <p className="pmw:mt-1 pmw:text-[13.5px] pmw:font-medium pmw:text-[#6a7180]">
+          Tell us what you need help with.
+        </p>
+      </div>
+      <label className="pmw:block pmw:text-xs pmw:font-semibold pmw:text-[#3a3f4a]">
+        Problem Definitions
         <select
           value={problemDefinitionId}
           onChange={(e) => setProblemDefinitionId(e.target.value)}
           required
-          className="pmw:rounded pmw:border pmw:border-gray-300 pmw:px-2 pmw:py-1.5 pmw:text-sm"
+          className="pmw:accent-ring pmw:mt-[7px] pmw:h-11 pmw:w-full pmw:rounded-[11px] pmw:border-[1.5px] pmw:border-[#e2e5ec] pmw:bg-[#fbfbfc] pmw:px-3.5 pmw:text-sm pmw:font-normal pmw:text-[#171a22] pmw:outline-none"
         >
           {problemDefinitions.map((pd) => (
             <option key={pd.id} value={pd.id}>
@@ -71,25 +84,25 @@ export function CreateTicketForm({ workspaces, loading, error, onSubmit }: Creat
           ))}
         </select>
       </label>
-      <label className="pmw:flex pmw:flex-col pmw:gap-1 pmw:text-xs pmw:text-gray-600">
+      <label className="pmw:block pmw:text-xs pmw:font-semibold pmw:text-[#3a3f4a]">
         Description
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder={selectedWorkspace?.ticketTitlePlaceholder}
+          placeholder={`${selectedWorkspace?.ticketTitlePlaceholder} | Please make sure you follow the required format.`}
           required
           rows={3}
-          className="pmw:rounded pmw:border pmw:border-gray-300 pmw:px-2 pmw:py-1.5 pmw:text-sm pmw:outline-none pmw:focus:border-blue-500"
+          className="pmw:accent-ring pmw:mt-[7px] pmw:w-full pmw:rounded-[11px] pmw:border-[1.5px] pmw:border-[#e2e5ec] pmw:bg-[#fbfbfc] pmw:px-3.5 pmw:py-2.5 pmw:text-sm pmw:font-normal pmw:text-[#171a22] pmw:outline-none"
         />
       </label>
-      <label className="pmw:flex pmw:flex-col pmw:gap-1 pmw:text-xs pmw:text-gray-600">
+      <label className="pmw:block pmw:text-xs pmw:font-semibold pmw:text-[#3a3f4a]">
         Photos
         <input
           type="file"
           multiple
           accept="image/*"
           onChange={(e) => setPhotos(Array.from(e.target.files ?? []))}
-          className="pmw:text-xs"
+          className="pmw:mt-[7px] pmw:block pmw:text-xs pmw:font-normal pmw:text-[#6a7180]"
         />
       </label>
       {(validationError || error) && (
@@ -98,7 +111,7 @@ export function CreateTicketForm({ workspaces, loading, error, onSubmit }: Creat
       <button
         type="submit"
         disabled={loading}
-        className="pmw:rounded pmw:bg-blue-600 pmw:px-3 pmw:py-1.5 pmw:text-sm pmw:font-medium pmw:text-white pmw:disabled:opacity-50"
+        className="pmw:accent-submit pmw:mt-1 pmw:h-[46px] pmw:rounded-[11px] pmw:border-none pmw:text-[14.5px] pmw:font-bold pmw:text-white pmw:disabled:opacity-50"
       >
         {loading ? "Submitting..." : "Submit request"}
       </button>

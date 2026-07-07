@@ -100,12 +100,13 @@ function PMWidgetPanel({
             workspaces={workspace.workspaces}
             loading={createTicket.loading}
             error={createTicket.error}
-            onSubmit={async (description, workspaceId, problemDefinitionId, photos) => {
+            onSubmit={async (description, workspaceId, problemDefinitionId, photos, fieldValues) => {
               const ticket = await createTicket.createTicket({
                 workspaceId,
                 description,
                 problemDefinitionId,
                 photos,
+                fieldValues,
               });
               if (!ticket) return false;
               tickets.refetch();

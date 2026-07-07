@@ -30,6 +30,7 @@ export function useCreateTicket(
       if (dto.handlerId) formData.append("handlerId", dto.handlerId);
       if (dto.deadline) formData.append("deadline", dto.deadline);
       for (const photo of dto.photos ?? []) formData.append("photos", photo);
+      formData.append("fieldValuesJson", JSON.stringify(dto.fieldValues ?? []));
 
       const client = new ApiClient({ baseUrl, token, onUnauthorized });
       const result = await client.postForm<Ticket>(`/request-workspace/${dto.workspaceId}/ticket`, formData);

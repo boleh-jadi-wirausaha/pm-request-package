@@ -61,6 +61,23 @@ export interface PagedResult<T> {
   totalPages: number;
 }
 
+export type FormFieldType = "Text" | "MultipleChoice" | "Checkbox" | "Toggle";
+
+export interface WorkspaceFormFieldDTO {
+  id: string;
+  label: string;
+  type: FormFieldType;
+  options?: string[];
+  isRequired: boolean;
+  order: number;
+  workspaceId?: string;
+}
+
+export interface TicketFieldValueInputDTO {
+  workspaceFormFieldId: string;
+  values: string[];
+}
+
 export interface Workspace {
   id: string;
   workspaceName: string;
@@ -72,6 +89,9 @@ export interface Workspace {
   ticketTitleRegex?: string;
   problemDefinitions?: ProblemDefinition[];
   ticketStates?: TicketState[];
+  // TODO: unconfirmed whether the authenticated `by-organization` workspace list embeds this
+  // (doc only documents FormFields on the anonymous request-form problem-definitions DTO).
+  formFields?: WorkspaceFormFieldDTO[];
 }
 
 export interface Ticket {
@@ -95,6 +115,7 @@ export interface CreateRequestWorkspaceTicketDTO {
   handlerId?: string;
   deadline?: string;
   photos?: File[];
+  fieldValues?: TicketFieldValueInputDTO[];
 }
 
 export interface TicketCustomerChat {

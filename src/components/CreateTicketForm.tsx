@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import type { ProblemDefinition, Workspace } from "../types";
+import React, { useEffect, useState } from "react";
+import type { ProblemDefinition, TicketFieldValueInputDTO, Workspace, WorkspaceFormFieldDTO } from "../types";
 
 export interface CreateTicketFormProps {
   workspaces: Workspace[];
@@ -9,7 +9,8 @@ export interface CreateTicketFormProps {
     description: string,
     workspaceId: string,
     problemDefinitionId: string,
-    photos: File[]
+    photos: File[],
+    fieldValues: TicketFieldValueInputDTO[]
   ) => Promise<boolean>;
 }
 
@@ -23,15 +24,106 @@ function flattenProblemDefinitions(workspaces: Workspace[]): FlatProblemDefiniti
   );
 }
 
+function isBlank(values: string[] | undefined): boolean {
+  return !values || values.length === 0 || values.every((v) => v.trim() === "");
+}
+
+function FormFieldControl({
+  field,
+  values,
+  onChange,
+}: {
+  field: WorkspaceFormFieldDTO;
+  values: string[];
+  onChange: (values: string[]) => void;
+}) {
+  const inputClasses =
+    "pmw:accent-ring pmw:mt-[7px] pmw:h-11 pmw:w-full pmw:rounded-[11px] pmw:border-[1.5px] pmw:border-[#e2e5ec] pmw:bg-[#fbfbfc] pmw:px-3.5 pmw:text-sm pmw:font-normal pmw:text-[#171a22] pmw:outline-none";
+
+  if (field.type === "Text") {
+    return (
+      <input
+        type="text"
+        value={values[0] ?? ""}
+        onChange={(e) => onChange([e.target.value])}
+        required={field.isRequired}
+        className={inputClasses}
+      />
+    );
+  }
+
+  if (field.type === "Toggle") {
+    const checked = values[0] === "true";
+    return (
+      <label className="pmw:mt-[7px] pmw:flex pmw:items-center pmw:gap-2 pmw:text-sm pmw:font-normal pmw:text-[#171a22]">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange([e.target.checked ? "true" : "false"])}
+        />
+        {checked ? "Yes" : "No"}
+      </label>
+    );
+  }
+
+  if (field.type === "MultipleChoice") {
+    return (
+      <select
+        value={values[0] ?? ""}
+        onChange={(e) => onChange(e.target.value ? [e.target.value] : [])}
+        required={field.isRequired}
+        className={inputClasses}
+      >
+        <option value="" disabled>
+          Select an option
+        </option>
+        {(field.options ?? []).map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  return (
+    <div className="pmw:mt-[7px] pmw:flex pmw:flex-col pmw:gap-1.5">
+      {(field.options ?? []).map((option) => (
+        <label
+          key={option}
+          className="pmw:flex pmw:items-center pmw:gap-2 pmw:text-sm pmw:font-normal pmw:text-[#171a22]"
+        >
+          <input
+            type="checkbox"
+            checked={values.includes(option)}
+            onChange={(e) =>
+              onChange(
+                e.target.checked ? [...values, option] : values.filter((v) => v !== option)
+              )
+            }
+          />
+          {option}
+        </label>
+      ))}
+    </div>
+  );
+}
+
 export function CreateTicketForm({ workspaces, loading, error, onSubmit }: CreateTicketFormProps) {
   const problemDefinitions = flattenProblemDefinitions(workspaces);
   const [description, setDescription] = useState("");
   const [problemDefinitionId, setProblemDefinitionId] = useState(problemDefinitions[0]?.id ?? "");
   const [photos, setPhotos] = useState<File[]>([]);
+  const [fieldAnswers, setFieldAnswers] = useState<Record<string, string[]>>({});
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const selectedProblemDefinition = problemDefinitions.find((pd) => pd.id === problemDefinitionId);
   const selectedWorkspace = workspaces.find((w) => w.id === selectedProblemDefinition?.workspaceId);
+  const formFields = (selectedWorkspace?.formFields ?? []).slice().sort((a, b) => a.order - b.order);
+
+  useEffect(() => {
+    setFieldAnswers({});
+  }, [selectedWorkspace?.id]);
 
   if (workspaces.length === 0) {
     return (
@@ -59,8 +151,27 @@ export function CreateTicketForm({ workspaces, loading, error, onSubmit }: Creat
           setValidationError("Description doesn't match the required format.");
           return;
         }
+        const missingRequired = formFields.some(
+          (field) => field.isRequired && isBlank(fieldAnswers[field.id])
+        );
+        if (missingRequired) {
+          setValidationError("Please fill in all required fields.");
+          return;
+        }
         setValidationError(null);
-        void onSubmit(description, selectedProblemDefinition!.workspaceId, problemDefinitionId, photos);
+        const fieldValues: TicketFieldValueInputDTO[] = formFields
+          .filter((field) => !isBlank(fieldAnswers[field.id]))
+          .map((field) => ({
+            workspaceFormFieldId: field.id,
+            values: fieldAnswers[field.id],
+          }));
+        void onSubmit(
+          description,
+          selectedProblemDefinition!.workspaceId,
+          problemDefinitionId,
+          photos,
+          fieldValues
+        );
       }}
     >
       <div>
@@ -69,42 +180,56 @@ export function CreateTicketForm({ workspaces, loading, error, onSubmit }: Creat
           Tell us what you need help with.
         </p>
       </div>
-      <label className="pmw:block pmw:text-xs pmw:font-semibold pmw:text-[#3a3f4a]">
-        Problem Definitions
-        <select
-          value={problemDefinitionId}
-          onChange={(e) => setProblemDefinitionId(e.target.value)}
-          required
-          className="pmw:accent-ring pmw:mt-[7px] pmw:h-11 pmw:w-full pmw:rounded-[11px] pmw:border-[1.5px] pmw:border-[#e2e5ec] pmw:bg-[#fbfbfc] pmw:px-3.5 pmw:text-sm pmw:font-normal pmw:text-[#171a22] pmw:outline-none"
-        >
-          {problemDefinitions.map((pd) => (
-            <option key={pd.id} value={pd.id}>
-              {pd.problemDefinitionText}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="pmw:block pmw:text-xs pmw:font-semibold pmw:text-[#3a3f4a]">
-        Description
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder={`${selectedWorkspace?.ticketTitlePlaceholder} | Please make sure you follow the required format.`}
-          required
-          rows={3}
-          className="pmw:accent-ring pmw:mt-[7px] pmw:w-full pmw:rounded-[11px] pmw:border-[1.5px] pmw:border-[#e2e5ec] pmw:bg-[#fbfbfc] pmw:px-3.5 pmw:py-2.5 pmw:text-sm pmw:font-normal pmw:text-[#171a22] pmw:outline-none"
-        />
-      </label>
-      <label className="pmw:block pmw:text-xs pmw:font-semibold pmw:text-[#3a3f4a]">
-        Photos
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={(e) => setPhotos(Array.from(e.target.files ?? []))}
-          className="pmw:mt-[7px] pmw:block pmw:text-xs pmw:font-normal pmw:text-[#6a7180]"
-        />
-      </label>
+      <div className="pmw:flex pmw:max-h-[360px] pmw:flex-col pmw:gap-3.5 pmw:overflow-y-auto pmw:pr-1">
+        <label className="pmw:block pmw:text-xs pmw:font-semibold pmw:text-[#3a3f4a]">
+          Problem Definitions
+          <select
+            value={problemDefinitionId}
+            onChange={(e) => setProblemDefinitionId(e.target.value)}
+            required
+            className="pmw:accent-ring pmw:mt-[7px] pmw:h-11 pmw:w-full pmw:rounded-[11px] pmw:border-[1.5px] pmw:border-[#e2e5ec] pmw:bg-[#fbfbfc] pmw:px-3.5 pmw:text-sm pmw:font-normal pmw:text-[#171a22] pmw:outline-none"
+          >
+            {problemDefinitions.map((pd) => (
+              <option key={pd.id} value={pd.id}>
+                {pd.problemDefinitionText}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="pmw:block pmw:text-xs pmw:font-semibold pmw:text-[#3a3f4a]">
+          Description
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder={`${selectedWorkspace?.ticketTitlePlaceholder ?? "Enter ticket description"
+              } | Please make sure you follow the required format.`}
+            required
+            rows={3}
+            className="pmw:accent-ring pmw:mt-[7px] pmw:w-full pmw:rounded-[11px] pmw:border-[1.5px] pmw:border-[#e2e5ec] pmw:bg-[#fbfbfc] pmw:px-3.5 pmw:py-2.5 pmw:text-sm pmw:font-normal pmw:text-[#171a22] pmw:outline-none"
+          />
+        </label>
+        {formFields.map((field) => (
+          <label key={field.id} className="pmw:block pmw:text-xs pmw:font-semibold pmw:text-[#3a3f4a]">
+            {field.label}
+            {field.isRequired ? " *" : ""}
+            <FormFieldControl
+              field={field}
+              values={fieldAnswers[field.id] ?? []}
+              onChange={(values) => setFieldAnswers((prev) => ({ ...prev, [field.id]: values }))}
+            />
+          </label>
+        ))}
+        <label className="pmw:block pmw:text-xs pmw:font-semibold pmw:text-[#3a3f4a]">
+          Photos
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={(e) => setPhotos(Array.from(e.target.files ?? []))}
+            className="pmw:mt-[7px] pmw:block pmw:text-xs pmw:font-normal pmw:text-[#6a7180]"
+          />
+        </label>
+      </div>
       {(validationError || error) && (
         <p className="pmw:text-xs pmw:text-red-600">{validationError ?? error}</p>
       )}

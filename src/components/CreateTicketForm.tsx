@@ -117,7 +117,7 @@ export function CreateTicketForm({ workspaces, loading, error, onSubmit }: Creat
           </select>
         </label>
         <label className="pmw:block pmw:text-xs pmw:font-semibold pmw:text-[#3a3f4a]">
-          Description
+          Note
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}

@@ -24,7 +24,7 @@ export function useCreateTicket(
       setError(null);
 
       const formData = new FormData();
-      formData.append("description", dto.description);
+      formData.append("note", dto.description);
       formData.append("problemDefinitionId", dto.problemDefinitionId);
       if (dto.ticketUrgencyId) formData.append("ticketUrgencyId", dto.ticketUrgencyId);
       if (dto.handlerId) formData.append("handlerId", dto.handlerId);

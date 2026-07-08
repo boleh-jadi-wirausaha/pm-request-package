@@ -95,7 +95,11 @@ export function useTicketChat(
         setError(result.error?.message ?? "Failed to send message");
         return false;
       }
-      setMessages((prev) => [...prev, result.data as TicketCustomerChat]);
+      setMessages((prev) =>
+        prev.some((m) => m.id === (result.data as TicketCustomerChat).id)
+          ? prev
+          : [...prev, result.data as TicketCustomerChat]
+      );
       return true;
     },
     [baseUrl, ticketId, token, onUnauthorized]

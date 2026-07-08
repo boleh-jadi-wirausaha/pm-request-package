@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import type { ProblemDefinition, TicketFieldValueInputDTO, Workspace, WorkspaceFormFieldDTO } from "../types";
+import type { ProblemDefinition, TicketFieldValueInputDTO, Workspace } from "../types";
+import { FormFieldControl } from "./FormFieldControl";
 
 export interface CreateTicketFormProps {
   workspaces: Workspace[];
@@ -26,87 +27,6 @@ function flattenProblemDefinitions(workspaces: Workspace[]): FlatProblemDefiniti
 
 function isBlank(values: string[] | undefined): boolean {
   return !values || values.length === 0 || values.every((v) => v.trim() === "");
-}
-
-function FormFieldControl({
-  field,
-  values,
-  onChange,
-}: {
-  field: WorkspaceFormFieldDTO;
-  values: string[];
-  onChange: (values: string[]) => void;
-}) {
-  const inputClasses =
-    "pmw:accent-ring pmw:mt-[7px] pmw:h-11 pmw:w-full pmw:rounded-[11px] pmw:border-[1.5px] pmw:border-[#e2e5ec] pmw:bg-[#fbfbfc] pmw:px-3.5 pmw:text-sm pmw:font-normal pmw:text-[#171a22] pmw:outline-none";
-
-  if (field.type === "Text") {
-    return (
-      <input
-        type="text"
-        value={values[0] ?? ""}
-        onChange={(e) => onChange([e.target.value])}
-        required={field.isRequired}
-        className={inputClasses}
-      />
-    );
-  }
-
-  if (field.type === "Toggle") {
-    const checked = values[0] === "true";
-    return (
-      <label className="pmw:mt-[7px] pmw:flex pmw:items-center pmw:gap-2 pmw:text-sm pmw:font-normal pmw:text-[#171a22]">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={(e) => onChange([e.target.checked ? "true" : "false"])}
-        />
-        {checked ? "Yes" : "No"}
-      </label>
-    );
-  }
-
-  if (field.type === "MultipleChoice") {
-    return (
-      <select
-        value={values[0] ?? ""}
-        onChange={(e) => onChange(e.target.value ? [e.target.value] : [])}
-        required={field.isRequired}
-        className={inputClasses}
-      >
-        <option value="" disabled>
-          Select an option
-        </option>
-        {(field.options ?? []).map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    );
-  }
-
-  return (
-    <div className="pmw:mt-[7px] pmw:flex pmw:flex-col pmw:gap-1.5">
-      {(field.options ?? []).map((option) => (
-        <label
-          key={option}
-          className="pmw:flex pmw:items-center pmw:gap-2 pmw:text-sm pmw:font-normal pmw:text-[#171a22]"
-        >
-          <input
-            type="checkbox"
-            checked={values.includes(option)}
-            onChange={(e) =>
-              onChange(
-                e.target.checked ? [...values, option] : values.filter((v) => v !== option)
-              )
-            }
-          />
-          {option}
-        </label>
-      ))}
-    </div>
-  );
 }
 
 export function CreateTicketForm({ workspaces, loading, error, onSubmit }: CreateTicketFormProps) {
@@ -211,7 +131,7 @@ export function CreateTicketForm({ workspaces, loading, error, onSubmit }: Creat
         {formFields.map((field) => (
           <label key={field.id} className="pmw:block pmw:text-xs pmw:font-semibold pmw:text-[#3a3f4a]">
             {field.label}
-            {field.isRequired ? " *" : ""}
+            {field.isRequired && <span className="pmw:ml-0.5 pmw:text-red-600">*</span>}
             <FormFieldControl
               field={field}
               values={fieldAnswers[field.id] ?? []}
@@ -221,13 +141,15 @@ export function CreateTicketForm({ workspaces, loading, error, onSubmit }: Creat
         ))}
         <label className="pmw:block pmw:text-xs pmw:font-semibold pmw:text-[#3a3f4a]">
           Photos
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={(e) => setPhotos(Array.from(e.target.files ?? []))}
-            className="pmw:mt-[7px] pmw:block pmw:text-xs pmw:font-normal pmw:text-[#6a7180]"
-          />
+          <div className="pmw:accent-ring pmw:w-36 pmw:mt-[7px] pmw:rounded-[11px] pmw:border-[1.5px] pmw:border-[#e2e5ec] pmw:bg-[#fbfbfc] pmw:px-3.5 pmw:py-3">
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={(e) => setPhotos(Array.from(e.target.files ?? []))}
+              className="pmw:block pmw:w-full pmw:text-xs pmw:font-normal pmw:text-[#6a7180]"
+            />
+          </div>
         </label>
       </div>
       {(validationError || error) && (

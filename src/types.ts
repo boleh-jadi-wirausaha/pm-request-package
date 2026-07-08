@@ -1,6 +1,8 @@
 export interface SaasClientConfig {
   baseUrl?: string;
   organizationId: string;
+  /** URL to a guest/anonymous request-form share link (e.g. ticketing-system-fe's /guest/request?share=<token>). When set, shows a "Guest" tab on the login screen that opens this URL in a new tab. */
+  guestShareUrl?: string;
 }
 
 export interface ApiResult<T> {

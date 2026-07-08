@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { CreateTicketForm } from "./components/CreateTicketForm";
+import { GuestTab } from "./components/GuestTab";
 import { LoginForm } from "./components/LoginForm";
 import { TicketDetail } from "./components/TicketDetail";
 import { TicketList } from "./components/TicketList";
@@ -65,12 +66,43 @@ function PMWidgetPanel({
   const tickets = useTickets(config, auth.token, auth.logout);
   const createTicket = useCreateTicket(config, auth.token, auth.logout);
   const [view, setView] = useState<View>({ name: "list" });
+  const [authTab, setAuthTab] = useState<"login" | "guest">("login");
 
   if (!auth.token) {
     return (
       <>
         <WidgetHeader brandName={brandName} onClose={onClose} />
-        <LoginForm onSubmit={auth.login} loading={auth.loading} error={auth.error} />
+        {config.guestShareUrl && (
+          <div className="pmw:flex pmw:border-b pmw:border-[#e7e9ef] pmw:px-5">
+            <button
+              type="button"
+              onClick={() => setAuthTab("login")}
+              className={`pmw:-mb-px pmw:border-b-2 pmw:px-3 pmw:py-2.5 pmw:text-[13.5px] pmw:font-semibold ${
+                authTab === "login"
+                  ? "pmw:border-[var(--accent)] pmw:text-[#171a22]"
+                  : "pmw:border-transparent pmw:text-[#6a7180]"
+              }`}
+            >
+              Login
+            </button>
+            <button
+              type="button"
+              onClick={() => setAuthTab("guest")}
+              className={`pmw:-mb-px pmw:border-b-2 pmw:px-3 pmw:py-2.5 pmw:text-[13.5px] pmw:font-semibold ${
+                authTab === "guest"
+                  ? "pmw:border-[var(--accent)] pmw:text-[#171a22]"
+                  : "pmw:border-transparent pmw:text-[#6a7180]"
+              }`}
+            >
+              Guest
+            </button>
+          </div>
+        )}
+        {authTab === "guest" && config.guestShareUrl ? (
+          <GuestTab guestShareUrl={config.guestShareUrl} />
+        ) : (
+          <LoginForm onSubmit={auth.login} loading={auth.loading} error={auth.error} />
+        )}
       </>
     );
   }

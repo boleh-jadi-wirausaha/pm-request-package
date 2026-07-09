@@ -119,6 +119,24 @@ export interface CreateRequestWorkspaceTicketDTO {
   fieldValues?: TicketFieldValueInputDTO[];
 }
 
+export type NotificationType =
+  | "TicketAssigned"
+  | "TicketStateChanged"
+  | "TicketApprovalRequested"
+  | "TicketApprovalDecided"
+  | "TicketCollaboratorAdded"
+  | "TicketMentioned"
+  | "SubtaskAssigned"
+  | "SubtaskStateChanged"
+  | "SubtaskApprovalRequested"
+  | "SubtaskApprovalDecided"
+  | "SubtaskMentioned"
+  | "MomInvited"
+  | "TicketChatted"
+  | "GroupChatMentioned"
+  | "TicketCustomerMessage"
+  | "TicketCustomerChatted";
+
 export interface TicketCustomerChat {
   id: string;
   message: string;

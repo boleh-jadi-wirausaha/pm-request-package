@@ -70,15 +70,22 @@ export function useTicketChat(
           return; // ignore malformed frames
         }
         const chatEvent = parseCustomerChatEvent(parsed, ticketId);
-        if (!chatEvent || chatEvent.Type !== 0) return; // only Add is defined for customer chat today
-        const mapped = mapSocketChatToTicketCustomerChat(chatEvent.Chat);
+        if (!chatEvent || chatEvent.type !== 0) return; // only Add is defined for customer chat today
+        const mapped = mapSocketChatToTicketCustomerChat(chatEvent.chat);
         setMessages((prev) => (prev.some((m) => m.id === mapped.id) ? prev : [...prev, mapped]));
       });
     } catch {
       // WebSocket constructor can throw synchronously (e.g. sandboxed iframe, invalid URL)
     }
 
-    return () => socket?.close();
+    return () => {
+      if (!socket) return;
+      if (socket.readyState === WebSocket.CONNECTING) {
+        socket.addEventListener("open", () => socket?.close());
+      } else {
+        socket.close();
+      }
+    };
   }, [baseUrl, ticketId, token]);
 
   const sendMessage = useCallback(

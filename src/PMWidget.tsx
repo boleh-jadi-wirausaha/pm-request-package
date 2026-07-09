@@ -3,11 +3,13 @@ import { createPortal } from "react-dom";
 import { CreateTicketForm } from "./components/CreateTicketForm";
 import { GuestTab } from "./components/GuestTab";
 import { LoginForm } from "./components/LoginForm";
+import { NotificationToast } from "./components/NotificationToast";
 import { TicketDetail } from "./components/TicketDetail";
 import { TicketList } from "./components/TicketList";
 import { WidgetHeader } from "./components/WidgetHeader";
 import { useAuth } from "./hooks/useAuth";
 import { useCreateTicket } from "./hooks/useCreateTicket";
+import { useNotifications } from "./hooks/useNotifications";
 import { useTickets } from "./hooks/useTickets";
 import { useWorkspace } from "./hooks/useWorkspace";
 import type { SaasClientConfig, Ticket } from "./types";
@@ -59,13 +61,21 @@ type View = { name: "list" } | { name: "create" } | { name: "detail"; ticket: Ti
 function PMWidgetPanel({
   brandName,
   onClose,
+  auth,
+  tickets,
+  view,
+  setView,
   ...config
-}: SaasClientConfig & { brandName: string; onClose: () => void }) {
-  const auth = useAuth(config);
+}: SaasClientConfig & {
+  brandName: string;
+  onClose: () => void;
+  auth: ReturnType<typeof useAuth>;
+  tickets: ReturnType<typeof useTickets>;
+  view: View;
+  setView: (view: View) => void;
+}) {
   const workspace = useWorkspace(config, auth.token, auth.logout);
-  const tickets = useTickets(config, auth.token, auth.logout);
   const createTicket = useCreateTicket(config, auth.token, auth.logout);
-  const [view, setView] = useState<View>({ name: "list" });
   const [authTab, setAuthTab] = useState<"login" | "guest">("login");
 
   if (!auth.token) {
@@ -77,22 +87,20 @@ function PMWidgetPanel({
             <button
               type="button"
               onClick={() => setAuthTab("login")}
-              className={`pmw:-mb-px pmw:border-b-2 pmw:px-3 pmw:py-2.5 pmw:text-[13.5px] pmw:font-semibold ${
-                authTab === "login"
-                  ? "pmw:border-[var(--accent)] pmw:text-[#171a22]"
-                  : "pmw:border-transparent pmw:text-[#6a7180]"
-              }`}
+              className={`pmw:-mb-px pmw:border-b-2 pmw:px-3 pmw:py-2.5 pmw:text-[13.5px] pmw:font-semibold ${authTab === "login"
+                ? "pmw:border-[var(--accent)] pmw:text-[#171a22]"
+                : "pmw:border-transparent pmw:text-[#6a7180]"
+                }`}
             >
               Login
             </button>
             <button
               type="button"
               onClick={() => setAuthTab("guest")}
-              className={`pmw:-mb-px pmw:border-b-2 pmw:px-3 pmw:py-2.5 pmw:text-[13.5px] pmw:font-semibold ${
-                authTab === "guest"
-                  ? "pmw:border-[var(--accent)] pmw:text-[#171a22]"
-                  : "pmw:border-transparent pmw:text-[#6a7180]"
-              }`}
+              className={`pmw:-mb-px pmw:border-b-2 pmw:px-3 pmw:py-2.5 pmw:text-[13.5px] pmw:font-semibold ${authTab === "guest"
+                ? "pmw:border-[var(--accent)] pmw:text-[#171a22]"
+                : "pmw:border-transparent pmw:text-[#6a7180]"
+                }`}
             >
               Guest
             </button>
@@ -173,6 +181,11 @@ export function PMWidget({
 }: PMWidgetProps) {
   const [open, setOpen] = useState(false);
   const container = useShadowRoot();
+  const auth = useAuth(config);
+  const tickets = useTickets(config, auth.token, auth.logout);
+  const [view, setView] = useState<View>({ name: "list" });
+  const activeTicketId = view.name === "detail" ? view.ticket.id : null;
+  const notifications = useNotifications(config, auth.token, activeTicketId);
 
   useEffect(() => {
     if (!open) return;
@@ -190,13 +203,32 @@ export function PMWidget({
       className={cornerClasses(corner)}
       style={{ zIndex: 2147483000, ["--accent" as string]: accentColor }}
     >
+      {auth.token && (
+        <NotificationToast
+          toasts={notifications.toasts}
+          onDismiss={notifications.dismiss}
+          onSelect={(ticketId) => {
+            const ticket = tickets.tickets.find((t) => t.id === ticketId);
+            if (ticket) setView({ name: "detail", ticket });
+            setOpen(true);
+          }}
+        />
+      )}
       {open && (
         <div
           role="dialog"
           aria-label="PM Widget"
-          className="pmw:sw-pop pmw:w-2xl pmw:max-w-[calc(100vw-3rem)] pmw:overflow-hidden pmw:rounded-[20px] pmw:border-2 pmw:border-[#e7e9ef] pmw:bg-white pmw:shadow-[0_18px_48px_rgba(23,26,45,.18),0_4px_12px_rgba(23,26,45,.06)]"
+          className="pmw:sw-pop pmw:relative pmw:w-2xl pmw:max-w-[calc(100vw-3rem)] pmw:overflow-hidden pmw:rounded-[20px] pmw:border-2 pmw:border-[#e7e9ef] pmw:bg-white pmw:shadow-[0_18px_48px_rgba(23,26,45,.18),0_4px_12px_rgba(23,26,45,.06)]"
         >
-          <PMWidgetPanel brandName={brandName} onClose={() => setOpen(false)} {...config} />
+          <PMWidgetPanel
+            brandName={brandName}
+            onClose={() => setOpen(false)}
+            auth={auth}
+            tickets={tickets}
+            view={view}
+            setView={setView}
+            {...config}
+          />
         </div>
       )}
       {!open &&

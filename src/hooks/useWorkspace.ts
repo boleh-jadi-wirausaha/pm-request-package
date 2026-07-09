@@ -26,7 +26,7 @@ export function useWorkspace(
 
     const client = new ApiClient({ baseUrl, token, onUnauthorized });
     client
-      .get<Workspace[]>(`/request-workspace/by-organization/${organizationId}`, controller.signal)
+      .get<Workspace[]>(`/request-workspace/by-organization/for-request/${organizationId}`, controller.signal)
       .then((result) => {
         if (controller.signal.aborted) return;
         setLoading(false);

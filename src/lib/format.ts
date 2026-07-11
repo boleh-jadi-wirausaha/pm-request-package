@@ -20,6 +20,22 @@ export function formatRelativeTime(iso?: string): string | null {
   return `${days}d ago`;
 }
 
+export function getDateDividerLabel(iso: string): string {
+  const d = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const sameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  if (sameDay(d, today)) return "Today";
+  if (sameDay(d, yesterday)) return "Yesterday";
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: d.getFullYear() === today.getFullYear() ? undefined : "numeric",
+  });
+}
+
 export function getInitials(name?: string): string {
   if (!name) return "?";
   const parts = name.trim().split(/\s+/);

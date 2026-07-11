@@ -69,6 +69,7 @@ export function useNotifications(
           return;
         }
 
+        console.log(parsed)
         const notification = parseNotificationEvent(parsed);
         if (!notification) return;
 

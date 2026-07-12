@@ -56,7 +56,7 @@ export function ChatPanel({ messages, loading, error, sending, onSend }: ChatPan
     <div className="pmw:flex pmw:flex-col">
       <div
         ref={scrollRef}
-        className="pmw:sw-scroll pmw:flex pmw:h-[600px] pmw:flex-col pmw:gap-1 pmw:overflow-y-auto pmw:bg-[#fbfbfc] pmw:p-[18px]"
+        className="pmw:sw-scroll pmw:flex pmw:h-[500px] pmw:flex-col pmw:gap-1 pmw:overflow-y-auto pmw:bg-[#fbfbfc] pmw:p-[18px]"
       >
         {loading && <p className="pmw:text-xs pmw:text-[#9aa0ad]">Loading chat...</p>}
         {error && <p className="pmw:text-xs pmw:text-red-600">{error}</p>}

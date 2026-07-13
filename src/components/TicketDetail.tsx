@@ -15,8 +15,8 @@ export function TicketDetail({ config, ticket, token, onUnauthorized }: TicketDe
   const chat = useTicketChat(config, ticket.id, token, onUnauthorized);
 
   return (
-    <div className="pmw:flex pmw:flex-col">
-      <div className="pmw:border-b pmw:border-[#f1f2f6] pmw:px-[18px] pmw:pb-3 pmw:pt-3.5">
+    <div className="pmw:flex pmw:min-h-0 pmw:flex-1 pmw:flex-col">
+      <div className="pmw:shrink-0 pmw:border-b pmw:border-[#f1f2f6] pmw:px-[18px] pmw:pb-3 pmw:pt-3.5">
         <div className="pmw:text-[15px] pmw:font-extrabold pmw:leading-tight pmw:tracking-tight pmw:text-[#171a22]">
           {ticket.description}
         </div>

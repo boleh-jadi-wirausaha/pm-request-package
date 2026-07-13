@@ -106,6 +106,9 @@ export interface Ticket {
   ticketState?: TicketState;
   ticketUrgency?: TicketUrgency;
   createdDate?: string;
+  customerChatUnreadCount?: number;
+  lastCustomerChatMessage?: string;
+  lastCustomerChatAt?: string;
 }
 
 export interface CreateRequestWorkspaceTicketDTO {

@@ -53,10 +53,10 @@ export function ChatPanel({ messages, loading, error, sending, onSend }: ChatPan
   }, [loading, messages]);
 
   return (
-    <div className="pmw:flex pmw:flex-col">
+    <div className="pmw:flex pmw:min-h-0 pmw:flex-1 pmw:flex-col">
       <div
         ref={scrollRef}
-        className="pmw:sw-scroll pmw:flex pmw:h-[500px] pmw:flex-col pmw:gap-1 pmw:overflow-y-auto pmw:bg-[#fbfbfc] pmw:p-[18px]"
+        className="pmw:sw-scroll pmw:flex pmw:min-h-0 pmw:flex-1 pmw:flex-col pmw:gap-1 pmw:overflow-y-auto pmw:bg-[#fbfbfc] pmw:p-[18px]"
       >
         {loading && <p className="pmw:text-xs pmw:text-[#9aa0ad]">Loading chat...</p>}
         {error && <p className="pmw:text-xs pmw:text-red-600">{error}</p>}
@@ -130,7 +130,7 @@ export function ChatPanel({ messages, loading, error, sending, onSend }: ChatPan
         ))}
       </div>
       <form
-        className="pmw:flex pmw:items-center pmw:gap-[9px] pmw:border-t pmw:border-[#f1f2f6] pmw:bg-white pmw:px-3.5 pmw:py-3"
+        className="pmw:flex pmw:shrink-0 pmw:items-center pmw:gap-[9px] pmw:border-t pmw:border-[#f1f2f6] pmw:bg-white pmw:px-3.5 pmw:py-3"
         onSubmit={(e) => {
           e.preventDefault();
           if (!draft.trim()) return;

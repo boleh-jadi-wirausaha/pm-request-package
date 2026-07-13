@@ -27,12 +27,15 @@ const TOAST_LIFETIME_MS = 6000;
 export function useNotifications(
   config: SaasClientConfig,
   token: string | null,
-  activeTicketId: string | null
+  activeTicketId: string | null,
+  onCustomerChatNotification?: (ticketId: string) => void
 ): UseNotificationsResult {
   const { baseUrl } = config;
   const [toasts, setToasts] = useState<NotificationToastData[]>([]);
   const activeTicketIdRef = useRef(activeTicketId);
   activeTicketIdRef.current = activeTicketId;
+  const onCustomerChatNotificationRef = useRef(onCustomerChatNotification);
+  onCustomerChatNotificationRef.current = onCustomerChatNotification;
 
   const dismiss = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -69,9 +72,12 @@ export function useNotifications(
           return;
         }
 
-        console.log(parsed)
         const notification = parseNotificationEvent(parsed);
         if (!notification) return;
+
+        if (notification.type === "TicketCustomerChatted" && notification.entityId !== activeTicketIdRef.current) {
+          onCustomerChatNotificationRef.current?.(notification.entityId);
+        }
 
         const toast: NotificationToastData = {
           id: notification.id,

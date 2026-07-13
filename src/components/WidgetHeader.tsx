@@ -8,7 +8,7 @@ export interface WidgetHeaderProps {
 
 export function WidgetHeader({ brandName, onClose, onBack }: WidgetHeaderProps) {
   return (
-    <div className="pmw:flex pmw:items-center pmw:gap-3 pmw:border-b pmw:border-[#eef0f4] pmw:px-[18px] pmw:py-4">
+    <div className="pmw:flex pmw:shrink-0 pmw:items-center pmw:gap-3 pmw:border-b pmw:border-[#eef0f4] pmw:px-[18px] pmw:py-4">
       {onBack ? (
         <button
           type="button"
@@ -41,7 +41,7 @@ export function WidgetHeader({ brandName, onClose, onBack }: WidgetHeaderProps) 
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Open PM Website"
-        className="pmw:ml-auto pmw:flex pmw:h-8 pmw:items-center pmw:gap-1.5 pmw:rounded-[9px] pmw:border-none pmw:bg-[#f3f4f7] pmw:px-2.5 pmw:text-[13px] pmw:font-semibold pmw:text-[#5b616e]"
+        className="pmw:ml-auto pmw:flex pmw:h-8 pmw:items-center pmw:gap-1.5 pmw:rounded-[9px] pmw:border-none pmw:bg-[#f3f4f7] pmw:px-2.5 pmw:text-[13px] pmw:font-semibold pmw:text-[#5b616e] pmw:hover:bg-[#e7e9ee] pmw:hover:text-[#171a22]"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
@@ -54,7 +54,7 @@ export function WidgetHeader({ brandName, onClose, onBack }: WidgetHeaderProps) 
         type="button"
         aria-label="Close"
         onClick={onClose}
-        className="pmw:flex pmw:h-8 pmw:w-8 pmw:items-center pmw:justify-center pmw:rounded-[9px] pmw:border-none pmw:bg-[#f3f4f7] pmw:text-[#5b616e]"
+        className="pmw:flex pmw:h-8 pmw:w-8 pmw:items-center pmw:justify-center pmw:rounded-[9px] pmw:border-none pmw:bg-[#f3f4f7] pmw:text-[#5b616e] pmw:hover:bg-[#e7e9ee] pmw:hover:text-[#171a22]"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
           <path d="M18 6L6 18M6 6l12 12" />

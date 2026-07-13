@@ -62,7 +62,7 @@ export interface PagedResult<T> {
   totalPages: number;
 }
 
-export type FormFieldType = "Text" | "MultipleChoice" | "Checkbox" | "Toggle";
+export type FormFieldType = "Text" | "MultipleChoice" | "Checkbox" | "Toggle" | "Date";
 
 export interface WorkspaceFormFieldDTO {
   id: string;

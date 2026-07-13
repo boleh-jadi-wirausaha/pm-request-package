@@ -50,6 +50,18 @@ export function FormFieldControl({ field, values, onChange }: FormFieldControlPr
     );
   }
 
+  if (field.type === "Date") {
+    return (
+      <input
+        type="date"
+        value={values[0] ?? ""}
+        onChange={(e) => onChange([e.target.value])}
+        required={field.isRequired}
+        className={inputClasses}
+      />
+    );
+  }
+
   if (field.type === "MultipleChoice") {
     return (
       <div className="pmw:mt-[7px] pmw:flex pmw:flex-wrap pmw:gap-1.5">

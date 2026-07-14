@@ -14,6 +14,21 @@ export interface SignInRequestDTO {
   Password: string;
 }
 
+export interface OtpRequestDTO {
+  Email: string;
+}
+
+export interface OtpVerifyDTO {
+  Email: string;
+  Code: string;
+}
+
+export interface VerifyTotpDTO {
+  PreAuthToken: string;
+  Code?: string;
+  BackupCode?: string;
+}
+
 export interface LoginResponse {
   token: string;
   expiresIn: string;

@@ -4,9 +4,10 @@ export interface WidgetHeaderProps {
   brandName: string;
   onClose: () => void;
   onBack?: () => void;
+  onLogout?: () => void;
 }
 
-export function WidgetHeader({ brandName, onClose, onBack }: WidgetHeaderProps) {
+export function WidgetHeader({ brandName, onClose, onBack, onLogout }: WidgetHeaderProps) {
   return (
     <div className="pmw:flex pmw:shrink-0 pmw:items-center pmw:gap-3 pmw:border-b pmw:border-[#eef0f4] pmw:px-[18px] pmw:py-4">
       {onBack ? (
@@ -41,7 +42,7 @@ export function WidgetHeader({ brandName, onClose, onBack }: WidgetHeaderProps) 
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Open PM Website"
-        className="pmw:ml-auto pmw:flex pmw:h-8 pmw:items-center pmw:gap-1.5 pmw:rounded-[9px] pmw:border-none pmw:bg-[#f3f4f7] pmw:px-2.5 pmw:text-[13px] pmw:font-semibold pmw:text-[#5b616e] pmw:hover:bg-[#e7e9ee] pmw:hover:text-[#171a22]"
+        className="pmw:ml-auto pmw:flex pmw:h-8 pmw:items-center pmw:gap-1.5 pmw:rounded-[9px] pmw:border-none pmw:bg-blue-50 pmw:px-2.5 pmw:text-[13px] pmw:font-semibold pmw:text-blue-600 pmw:hover:bg-blue-100 pmw:hover:text-blue-700"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
@@ -50,6 +51,21 @@ export function WidgetHeader({ brandName, onClose, onBack }: WidgetHeaderProps) 
         </svg>
         <span>Open PM</span>
       </a>
+      {onLogout && (
+        <button
+          type="button"
+          aria-label="Log out"
+          onClick={onLogout}
+          className="pmw:flex pmw:h-8 pmw:items-center pmw:gap-1.5 pmw:rounded-[9px] pmw:border-none pmw:bg-red-50 pmw:px-2.5 pmw:text-[13px] pmw:font-semibold pmw:text-red-600 pmw:hover:bg-red-100 pmw:hover:text-red-700"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <path d="M16 17l5-5-5-5" />
+            <path d="M21 12H9" />
+          </svg>
+          <span>Logout</span>
+        </button>
+      )}
       <button
         type="button"
         aria-label="Close"

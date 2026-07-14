@@ -66,11 +66,13 @@ export function TicketList({ tickets, loading, error, onSelect, onCreateNew }: T
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`pmw:relative pmw:flex-1 pmw:rounded-[9px] pmw:border-none pmw:py-1.5 pmw:text-[12.5px] pmw:font-bold pmw:capitalize ${
-              tab === t ? "pmw:accent-action pmw:text-white" : "pmw:bg-[#f2f3f6] pmw:text-[#6a7180]"
-            }`}
+            className={`pmw:relative pmw:flex-1 pmw:rounded-[9px] pmw:border-none pmw:py-1.5 pmw:text-[12.5px] pmw:font-bold pmw:capitalize ${tab === t ? "pmw:accent-action pmw:text-white" : "pmw:bg-[#f2f3f6] pmw:text-[#6a7180]"
+              }`}
           >
             {t}
+            <span className="pmw:ml-1 pmw:text-[12px] pmw:font-semibold pmw:opacity-70">
+              ({ticketCounts[t]})
+            </span>
             {unreadCounts[t] > 0 && (
               <span
                 className="pmw:absolute pmw:-right-1 pmw:-top-1 pmw:flex pmw:h-[16px] pmw:min-w-[16px] pmw:items-center pmw:justify-center pmw:rounded-full pmw:bg-red-500 pmw:px-1 pmw:text-[9.5px] pmw:font-bold pmw:text-white"

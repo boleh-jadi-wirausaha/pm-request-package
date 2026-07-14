@@ -22,6 +22,11 @@ export interface PMWidgetProps extends SaasClientConfig {
   corner?: PMWidgetCorner;
   accentColor?: string;
   brandName?: string;
+  /**
+   * Change this value whenever the host site logs its own user out to also log the widget out.
+   * Any change after mount triggers a logout; the initial value on mount does not.
+   */
+  logoutSignal?: string | number;
 }
 
 function useShadowRoot() {
@@ -46,6 +51,14 @@ function useShadowRoot() {
   }, []);
 
   return container;
+}
+
+function Footer() {
+  return (
+    <div className="pmw:shrink-0 pmw:border-t pmw:border-[#e7e9ef] pmw:py-1.5 pmw:text-center pmw:text-[13px] pmw:text-[#a3a8b5]">
+      powered by pm.bojawi.com
+    </div>
+  );
 }
 
 function cornerClasses(corner: PMWidgetCorner): string {
@@ -112,9 +125,18 @@ function PMWidgetPanel({
           {authTab === "guest" && config.guestShareUrl ? (
             <GuestTab guestShareUrl={config.guestShareUrl} />
           ) : (
-            <LoginForm onSubmit={auth.login} loading={auth.loading} error={auth.error} />
+            <LoginForm
+              onPasswordLogin={auth.login}
+              onRequestOtp={auth.requestOtp}
+              onVerifyOtp={auth.verifyOtp}
+              onVerifyTotp={auth.verifyTotp}
+              mfaRequired={auth.mfaRequired}
+              loading={auth.loading}
+              error={auth.error}
+            />
           )}
         </div>
+        <Footer />
       </>
     );
   }
@@ -122,8 +144,9 @@ function PMWidgetPanel({
   if (view.name === "detail") {
     return (
       <>
-        <WidgetHeader brandName={brandName} onClose={onClose} onBack={() => setView({ name: "list" })} />
+        <WidgetHeader brandName={brandName} onClose={onClose} onBack={() => setView({ name: "list" })} onLogout={auth.logout} />
         <TicketDetail config={config} ticket={view.ticket} token={auth.token} onUnauthorized={auth.logout} />
+        <Footer />
       </>
     );
   }
@@ -131,7 +154,7 @@ function PMWidgetPanel({
   if (view.name === "create") {
     return (
       <>
-        <WidgetHeader brandName={brandName} onClose={onClose} />
+        <WidgetHeader brandName={brandName} onClose={onClose} onLogout={auth.logout} />
         <div className="pmw:flex pmw:min-h-0 pmw:flex-1 pmw:flex-col pmw:gap-2 pmw:p-4">
           <button
             type="button"
@@ -160,13 +183,14 @@ function PMWidgetPanel({
             onDirtyChange={onCreateDirtyChange}
           />
         </div>
+        <Footer />
       </>
     );
   }
 
   return (
     <>
-      <WidgetHeader brandName={brandName} onClose={onClose} />
+      <WidgetHeader brandName={brandName} onClose={onClose} onLogout={auth.logout} />
       <TicketList
         tickets={tickets.tickets}
         loading={tickets.loading}
@@ -174,6 +198,7 @@ function PMWidgetPanel({
         onSelect={(ticket) => setView({ name: "detail", ticket })}
         onCreateNew={() => setView({ name: "create" })}
       />
+      <Footer />
     </>
   );
 }
@@ -182,6 +207,7 @@ export function PMWidget({
   corner = "bottom-right",
   accentColor = "#4b5bf0",
   brandName = "Support",
+  logoutSignal,
   ...config
 }: PMWidgetProps) {
   const [open, setOpen] = useState(false);
@@ -209,6 +235,13 @@ export function PMWidget({
     }
     setOpen(false);
   };
+
+  const logoutSignalRef = useRef(logoutSignal);
+  useEffect(() => {
+    if (logoutSignal === undefined || logoutSignalRef.current === logoutSignal) return;
+    logoutSignalRef.current = logoutSignal;
+    auth.logout();
+  }, [logoutSignal, auth.logout]);
 
   useEffect(() => {
     if (!open) return;

@@ -90,6 +90,10 @@ export function CreateTicketForm({ workspaces, loading, error, onSubmit, onDirty
           setValidationError("Description doesn't match the required format.");
           return;
         }
+        if (description.trim() === "") {
+          setValidationError("Please fill in Note.");
+          return;
+        }
         const missingRequired = formFields.some(
           (field) => field.isRequired && isBlank(fieldAnswers[field.id])
         );
@@ -136,7 +140,7 @@ export function CreateTicketForm({ workspaces, loading, error, onSubmit, onDirty
           </select>
         </label>
         <label className="pmw:block pmw:text-xs pmw:font-semibold pmw:text-[#3a3f4a]">
-          Note
+          Note<span className="pmw:ml-0.5 pmw:text-red-600">*</span>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
